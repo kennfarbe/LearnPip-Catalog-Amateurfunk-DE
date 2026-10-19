@@ -16,27 +16,33 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Select release package
+      - name: Verify pinned BNetzA source
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_zip="source/PruefungsfragenZIP.zip"
+          test -f "$source_zip"
+          echo "082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4  $source_zip" | sha256sum --check --strict
+
+      - name: Build release package
         id: package
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print | sort)
-          if (( ${#packages[@]} != 1 )); then
-            echo "Ein Release benötigt genau ein geprüftes ZIP unter catalog/." >&2
-            exit 1
-          fi
-          package="${packages[0]}"
-          echo "path=${package}" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename "${package}")" >> "$GITHUB_OUTPUT"
+          version="${GITHUB_REF_NAME#v}"
+          python3 scripts/import-bnetza.py source/PruefungsfragenZIP.zip build/catalog --catalog-version "$version"
+          package="build/de.bnetza.amateurfunk.pruefungsfragen-${version}.zip"
+          test -f "$package"
+          echo "path=$package" >> "$GITHUB_OUTPUT"
 
-      - name: Validate LearnPip package contract
+      - name: Validate LearnPip package and BNetzA content
         shell: bash
         env:
           PACKAGE: ${{ steps.package.outputs.path }}
         run: |
           set -euo pipefail
-          python3 scripts/validate-release.py "$PACKAGE" > validation-report.txt\n          python3 scripts/validate-bnetza-content.py "$PACKAGE" >> validation-report.txt
+          python3 scripts/validate-release.py "$PACKAGE" > validation-report.txt
+          python3 scripts/validate-bnetza-content.py "$PACKAGE" >> validation-report.txt
 
       - name: Create SHA-256 file
         shell: bash
