@@ -1,0 +1,60 @@
+name: Release catalog
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Select release package
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print | sort)
+          if (( ${#packages[@]} != 1 )); then
+            echo "Ein Release benötigt genau ein geprüftes ZIP unter catalog/." >&2
+            exit 1
+          fi
+          package="${packages[0]}"
+          echo "path=${package}" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "${package}")" >> "$GITHUB_OUTPUT"
+
+      - name: Validate LearnPip package contract
+        shell: bash
+        env:
+          PACKAGE: ${{ steps.package.outputs.path }}
+        run: |
+          set -euo pipefail
+          python3 scripts/validate-release.py "$PACKAGE" > validation-report.txt
+
+      - name: Create SHA-256 file
+        shell: bash
+        env:
+          PACKAGE: ${{ steps.package.outputs.path }}
+        run: |
+          set -euo pipefail
+          sha256sum "$PACKAGE" > SHA256SUMS
+
+      - name: Upload immutable release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ steps.package.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            "$PACKAGE" SHA256SUMS validation-report.txt \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
