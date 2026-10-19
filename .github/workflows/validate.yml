@@ -29,6 +29,18 @@ jobs:
             echo "Tabulatoren sind in Textdateien nicht zulässig." >&2
             exit 1
           fi
+          python3 - <<'PY'
+          import urllib.request
+          for name in ("manifest.schema.json", "questions.schema.json"):
+              url = "https://raw.githubusercontent.com/kennfarbe/LearnPip/main/schemas/catalog/1.0.0/" + name
+              with urllib.request.urlopen(url, timeout=20) as response:
+                  data = response.read()
+              if b'"schema_version"' not in data and name == "manifest.schema.json":
+                  raise SystemExit("LearnPip-Schema 1.0.0 ist nicht erwartungsgemäß verfügbar")
+              if b'"questions"' not in data and name == "questions.schema.json":
+                  raise SystemExit("LearnPip-Fragenschema 1.0.0 ist nicht erwartungsgemäß verfügbar")
+          print("Öffentlicher LearnPip-Schemavertrag 1.0.0 erreichbar.")
+          PY
           mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print 2>/dev/null | sort)
           if (( ${#packages[@]} > 0 )); then
             echo "Katalog-ZIPs vorhanden. Vor einem Inhaltsrelease muss die versionsgebundene LearnPip-Vertragsvalidierung im Katalog-PR ergänzt bzw. aktualisiert werden." >&2
