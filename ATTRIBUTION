@@ -2,6 +2,7 @@ Prüfungsfragen zum Erwerb von Amateurfunkprüfungsbescheinigungen
 Bundesnetzagentur
 3. Auflage, März 2024
 Gültig ab 24. Juni 2024
+Abrufdatum der hier festgelegten Quelldatei: 19. Oktober 2026
 
 Quelle: https://www.bundesnetzagentur.de/Amateurfunk
 Lizenz: Datenlizenz Deutschland – Namensnennung – Version 2.0 (DL-DE/BY-2.0)
@@ -14,4 +15,14 @@ Bundesnetzagentur, 3. Auflage, März 2024,
 Namensnennung – Version 2.0 (www.govdata.de/dl-de/by-2-0)
 
 Freigegebene maschinenlesbare Quelldatei:
+source/PruefungsfragenZIP.zip
 SHA-256: 082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4
+
+Änderungshinweis:
+Für LearnPip werden die Quelldaten in den LearnPip-Austauschvertrag 1.0.0
+überführt und um technische Paket-, Lizenz- und Herkunftsmetadaten ergänzt.
+Fragentexte, vorhandene Antworttexte und referenzierte SVG-Dateien werden
+inhaltlich unverändert aus der BNetzA-Quelldatei übernommen. Bildbasierte
+Antworten ohne Text erhalten ausschließlich für die vom Austauschformat
+verlangte Textzusammenfassung den Wert "[Bild]"; der eigentliche Antwortinhalt
+bleibt das unveränderte SVG.
