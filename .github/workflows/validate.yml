@@ -48,18 +48,18 @@ jobs:
           print("Öffentlicher LearnPip-Schemavertrag 1.0.0 erreichbar.")
           PY
 
-      - name: Validate catalog package
+      - name: Verify and import BNetzA source
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print 2>/dev/null | sort)
-          if (( ${#packages[@]} == 0 )); then
-            echo "Kein Releasepaket im Repository; Werkzeug- und Dokumentationsprüfung abgeschlossen."
-            exit 0
-          fi
-          if (( ${#packages[@]} != 1 )); then
-            echo "Es ist höchstens ein Releasepaket unter catalog/ zulässig." >&2
+          source_zip="source/PruefungsfragenZIP.zip"
+          if [[ ! -f "$source_zip" ]]; then
+            echo "Die unveränderte freigegebene BNetzA-Quelldatei fehlt: $source_zip" >&2
             exit 1
           fi
-          python3 scripts/validate-release.py "${packages[0]}"
-          python3 scripts/validate-bnetza-content.py "${packages[0]}"
+          echo "082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4  $source_zip" | sha256sum --check --strict
+          python3 scripts/import-bnetza.py "$source_zip" build/catalog --catalog-version 1.0.0
+          package="build/de.bnetza.amateurfunk.pruefungsfragen-1.0.0.zip"
+          python3 scripts/validate-release.py "$package"
+          python3 scripts/validate-bnetza-content.py "$package"
+          python3 tests/test-import.py "$source_zip"
