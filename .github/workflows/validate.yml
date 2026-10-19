@@ -14,7 +14,8 @@ jobs:
   repository:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout catalog repository
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -31,36 +32,32 @@ jobs:
             exit 1
           fi
 
-      - name: Verify LearnPip 1.0.0 contract availability
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import urllib.request
-          for name in ("manifest.schema.json", "questions.schema.json"):
-              url = "https://raw.githubusercontent.com/kennfarbe/LearnPip/main/schemas/catalog/1.0.0/" + name
-              with urllib.request.urlopen(url, timeout=20) as response:
-                  data = response.read()
-              if name == "manifest.schema.json" and b'"schema_version"' not in data:
-                  raise SystemExit("LearnPip-Schema 1.0.0 ist nicht erwartungsgemäß verfügbar")
-              if name == "questions.schema.json" and b'"questions"' not in data:
-                  raise SystemExit("LearnPip-Fragenschema 1.0.0 ist nicht erwartungsgemäß verfügbar")
-          print("Öffentlicher LearnPip-Schemavertrag 1.0.0 erreichbar.")
-          PY
+      - name: Checkout pinned LearnPip contract
+        uses: actions/checkout@v4
+        with:
+          repository: kennfarbe/LearnPip
+          ref: 13270a7cae206980560040770cacd62e0252129e
+          path: .contract/learnpip
+          persist-credentials: false
 
-      - name: Verify and import BNetzA source
+      - name: Verify, build and validate catalog
         shell: bash
         run: |
           set -euo pipefail
           source_zip="source/PruefungsfragenZIP.zip"
-          if [[ ! -f "$source_zip" ]]; then
-            echo "Die unveränderte freigegebene BNetzA-Quelldatei fehlt: $source_zip" >&2
-            exit 1
-          fi
-          echo "082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4  $source_zip" | sha256sum --check --strict
-          python3 -m py_compile scripts/import-bnetza.py scripts/validate-release.py scripts/validate-bnetza-content.py tests/test-import.py
-          python3 scripts/import-bnetza.py "$source_zip" build/catalog --catalog-version 1.0.0
+          expected_sha="082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4"
+
+          test -f "$source_zip"
+          echo "$expected_sha  $source_zip" | sha256sum --check --strict
+
+          python3 -m py_compile             scripts/import-bnetza.py             scripts/validate-release.py             scripts/validate-bnetza-content.py             tests/test-import.py
+
+          python3 scripts/import-bnetza.py             "$source_zip"             build/catalog             --catalog-version 1.0.0
+
           package="build/de.bnetza.amateurfunk.pruefungsfragen-1.0.0.zip"
+          test -f "$package"
+
           python3 scripts/validate-release.py "$package"
           python3 scripts/validate-bnetza-content.py "$package"
+          python3 .contract/learnpip/scripts/validate-catalog.py "$package"
           python3 tests/test-import.py "$source_zip"
