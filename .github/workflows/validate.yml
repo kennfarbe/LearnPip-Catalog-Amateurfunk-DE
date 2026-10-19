@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - name: Validate repository contract
         shell: bash
         run: |
@@ -29,20 +30,36 @@ jobs:
             echo "Tabulatoren sind in Textdateien nicht zulässig." >&2
             exit 1
           fi
+
+      - name: Verify LearnPip 1.0.0 contract availability
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           import urllib.request
           for name in ("manifest.schema.json", "questions.schema.json"):
               url = "https://raw.githubusercontent.com/kennfarbe/LearnPip/main/schemas/catalog/1.0.0/" + name
               with urllib.request.urlopen(url, timeout=20) as response:
                   data = response.read()
-              if b'"schema_version"' not in data and name == "manifest.schema.json":
+              if name == "manifest.schema.json" and b'"schema_version"' not in data:
                   raise SystemExit("LearnPip-Schema 1.0.0 ist nicht erwartungsgemäß verfügbar")
-              if b'"questions"' not in data and name == "questions.schema.json":
+              if name == "questions.schema.json" and b'"questions"' not in data:
                   raise SystemExit("LearnPip-Fragenschema 1.0.0 ist nicht erwartungsgemäß verfügbar")
           print("Öffentlicher LearnPip-Schemavertrag 1.0.0 erreichbar.")
           PY
+
+      - name: Validate catalog package
+        shell: bash
+        run: |
+          set -euo pipefail
           mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print 2>/dev/null | sort)
-          if (( ${#packages[@]} > 0 )); then
-            echo "Katalog-ZIPs vorhanden. Vor einem Inhaltsrelease muss die versionsgebundene LearnPip-Vertragsvalidierung im Katalog-PR ergänzt bzw. aktualisiert werden." >&2
+          if (( ${#packages[@]} == 0 )); then
+            echo "Kein Releasepaket im Repository; Werkzeug- und Dokumentationsprüfung abgeschlossen."
+            exit 0
+          fi
+          if (( ${#packages[@]} != 1 )); then
+            echo "Es ist höchstens ein Releasepaket unter catalog/ zulässig." >&2
             exit 1
           fi
+          python3 scripts/validate-release.py "${packages[0]}"
+          python3 scripts/validate-bnetza-content.py "${packages[0]}"
