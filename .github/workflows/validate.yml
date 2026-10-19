@@ -58,7 +58,7 @@ jobs:
             exit 1
           fi
           echo "082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4  $source_zip" | sha256sum --check --strict
-          python3 scripts/import-bnetza.py "$source_zip" build/catalog --catalog-version 1.0.0
+          python3 -m py_compile scripts/import-bnetza.py scripts/validate-release.py scripts/validate-bnetza-content.py tests/test-import.py\n          python3 scripts/import-bnetza.py "$source_zip" build/catalog --catalog-version 1.0.0
           package="build/de.bnetza.amateurfunk.pruefungsfragen-1.0.0.zip"
           python3 scripts/validate-release.py "$package"
           python3 scripts/validate-bnetza-content.py "$package"
