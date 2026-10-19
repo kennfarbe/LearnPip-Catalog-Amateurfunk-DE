@@ -36,7 +36,7 @@ jobs:
           PACKAGE: ${{ steps.package.outputs.path }}
         run: |
           set -euo pipefail
-          python3 scripts/validate-release.py "$PACKAGE" > validation-report.txt
+          python3 scripts/validate-release.py "$PACKAGE" > validation-report.txt\n          python3 scripts/validate-bnetza-content.py "$PACKAGE" >> validation-report.txt
 
       - name: Create SHA-256 file
         shell: bash
