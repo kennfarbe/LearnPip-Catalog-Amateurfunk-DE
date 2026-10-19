@@ -1,0 +1,36 @@
+name: Validate catalog repository
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate repository contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s LICENSES.md
+          test -s NOTICE
+          test -s ATTRIBUTION
+          if find . -type f -not -path './.git/*' -print0 | xargs -0 grep -Il $'\t' | grep -q .; then
+            echo "Tabulatoren sind in Textdateien nicht zulässig." >&2
+            exit 1
+          fi
+          mapfile -t packages < <(find catalog -maxdepth 1 -type f -name '*.zip' -print 2>/dev/null | sort)
+          if (( ${#packages[@]} > 0 )); then
+            echo "Katalog-ZIPs vorhanden. Vor einem Inhaltsrelease muss die versionsgebundene LearnPip-Vertragsvalidierung im Katalog-PR ergänzt bzw. aktualisiert werden." >&2
+            exit 1
+          fi
