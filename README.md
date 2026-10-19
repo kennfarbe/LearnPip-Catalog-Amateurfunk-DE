@@ -4,7 +4,7 @@ Dieses Repository pflegt den deutschen Amateurfunk-Fragenkatalog als eigenständ
 
 ## Status
 
-Die Repository- und Release-Infrastruktur ist vorbereitet. Offizielle Fragen der Bundesnetzagentur werden erst nach reproduzierbarem Import, Quellenprüfung und vollständigem Lizenznachweis veröffentlicht. Bis dahin gibt es bewusst kein Inhaltsrelease.
+Der offizielle Fragenkatalog der Bundesnetzagentur, 3. Auflage März 2024, ist als reproduzierbare Importquelle verifiziert. Der Importer übernimmt 1.750 Fragen für die Klassen N, E und A sowie 687 referenzierte SVG-Abbildungen in den LearnPip-Austauschvertrag 1.0.0. Ein Inhaltsrelease wird erst nach erfolgreicher Paket- und Inhaltsvalidierung veröffentlicht.
 
 ## Schnittstelle zu LearnPip
 
@@ -14,8 +14,8 @@ LearnPip selbst ist weder Build- noch Runtime-Abhängigkeit dieses Repositories.
 
 ## Repository-Inhalte
 
-- `catalog/`: Quelldaten und erzeugte Paketbestandteile, sobald fachlich freigegeben
-- `scripts/`: katalogspezifische Import-/Validierungswerkzeuge
+- `catalog/`: geprüftes, aus der freigegebenen Quelle erzeugtes Releasepaket
+- `scripts/import-bnetza.py`: reproduzierbarer Import der freigegebenen BNetzA-Quelldatei\n- `scripts/validate-release.py`: Integritätsprüfung des LearnPip-Pakets\n- `scripts/validate-bnetza-content.py`: Vollständigkeitsprüfung für Fragen, Klassen, Lösungen und Medien
 - `LICENSES.md`: Lizenzmatrix
 - `NOTICE`: Hinweise zu Herkunft und Marken-/Behördenbezug
 - `ATTRIBUTION`: Namensnennungen und Quellen
