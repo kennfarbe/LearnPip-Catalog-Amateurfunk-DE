@@ -14,7 +14,7 @@ PACKAGE_ID = "de.bnetza.amateurfunk.pruefungsfragen"
 SOURCE_URL = "https://www.bundesnetzagentur.de/Amateurfunk"
 SOURCE_REVISION = "3. Auflage, März 2024"
 LICENSE_ID = "DL-DE-BY-2.0"
-ATTRIBUTION = (
+SOURCE_SHA256 = "082fbf8de303d4ceafc57b9d5f15f211d08a2e24f3629b66c7e061abcb52bee4"\nATTRIBUTION = (
     "Prüfungsfragen zum Erwerb von Amateurfunkprüfungsbescheinigungen, "
     "Bundesnetzagentur, 3. Auflage, März 2024, "
     "(www.bundesnetzagentur.de/amateurfunk), Datenlizenz Deutschland – "
